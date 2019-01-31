@@ -18,14 +18,14 @@ public class Main {
 		window.pack();
 		
 		// Configure the window
-				try {
-					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());	// Set the look and feel to the system look and feel. 
-					icon = ImageIO.read(new File(icon_path));
-					window.setIconImage(icon);	// Set the icon of the window (top left)
-		        } 
-		        catch (Exception e) {
-		            System.err.println("System look and feel did not load properly.");
-		        }
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());	// Set the look and feel to the system look and feel. 
+			icon = ImageIO.read(new File(icon_path));
+			window.setIconImage(icon);	// Set the icon of the window (top left)
+        } 
+        catch (Exception e) {
+            System.err.println("System look and feel did not load properly.");
+        }
 		window.setTitle("Snake Game");
 		window.setLocationRelativeTo(null);	// Center the window
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	// When the X button is pressed, terminate the program.
