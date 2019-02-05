@@ -9,7 +9,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
-/** Opens up a JPanel that plays a Snake game using the arrow keys on the keybaord. */
+/** Opens up a JPanel that plays a Snake game using the arrow keys on the keyboard. */
 public class SnakeGame extends JPanel {
 	
 	/** ?? */
@@ -45,7 +45,7 @@ public class SnakeGame extends JPanel {
 	private Point food_location = getRandomPoint();
 	
 	// Physics update time
-	private final long UPDATE_TIME = 50000000;	// The certain amount of time needed for ^^^ is this.
+	private final long UPDATE_TIME = 50000000;	// The amount of time between each game update
 	private long previous_update_time = 0;	// After a certain amount of time, update the snake. (Separates the game physics from the frame rate)
 	private int framerate = 0;	// Number of frames generated in between physics updates
 	private int display_framerate = 0;
