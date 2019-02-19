@@ -1,3 +1,4 @@
+package game;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -11,6 +12,8 @@ import javax.swing.KeyStroke;
 
 /** Opens up a JPanel that plays a Snake game using the arrow keys on the keyboard. */
 public class SnakeGame extends JPanel {
+	
+	// Variables ============================================================================
 	
 	/** ?? */
 	private static final long serialVersionUID = 1L;
@@ -34,6 +37,7 @@ public class SnakeGame extends JPanel {
 	private static final String KEY_LEFT = "move left";
 	private static final String KEY_RIGHT = "move right";
 	private static final String PAUSE = "pause game";
+	private static final String SAVESTATE = "save";
 	
 	// Snake and direction variables
 	private Snek snake = new Snek(GRID_WIDTH*GRID_HEIGHT);	// Create a snake (or rather, a list of body parts)
@@ -42,10 +46,10 @@ public class SnakeGame extends JPanel {
 	private int dY = 0;
 	
 	// Food Variables 
-	private Point food_location = getRandomPoint();
+	private Point food_location;
 	
 	// Physics update time
-	private final long UPDATE_TIME = 50000000;	// The amount of time between each game update
+	private final long UPDATE_TIME = 50000000;	// The amount of time between each game update: 50000000
 	private long previous_update_time = 0;	// After a certain amount of time, update the snake. (Separates the game physics from the frame rate)
 	private int framerate = 0;	// Number of frames generated in between physics updates
 	private int display_framerate = 0;
@@ -53,73 +57,19 @@ public class SnakeGame extends JPanel {
 	private boolean isLoser = false;	// The player loses the game when they collide with the edge or itself
 	private boolean isWinner = false;	// The player wins when it the snake is the size of the grid x grid. 
 	
+	// Constructor ==========================================================================
+	
 	public SnakeGame() {
-		//Configure Game variables
-		resetGame();
-		
 		// Configure Window
 		setPreferredSize(WINDOW);
 		setSize(getPreferredSize());
 		
-		// Configure Key Bindings
-		getInputMap(IFW).put(KeyStroke.getKeyStroke("UP"), KEY_UP);
-		getInputMap(IFW).put(KeyStroke.getKeyStroke("DOWN"), KEY_DOWN);
-		getInputMap(IFW).put(KeyStroke.getKeyStroke("LEFT"), KEY_LEFT);
-		getInputMap(IFW).put(KeyStroke.getKeyStroke("RIGHT"), KEY_RIGHT);
-		getInputMap(IFW).put(KeyStroke.getKeyStroke(' '), PAUSE);
-		getActionMap().put(KEY_UP, new AbstractAction() {
-			private static final long serialVersionUID = 2L;
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(dY != SPEED) {
-					dX = 0;
-					dY = -SPEED;
-				}
-			}
-		});
-		getActionMap().put(KEY_DOWN, new AbstractAction() {
-			private static final long serialVersionUID = 3L;
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(dY != -SPEED) {
-					dX = 0;
-					dY = SPEED;
-				}
-			}
-		});
-		getActionMap().put(KEY_LEFT, new AbstractAction() {
-			private static final long serialVersionUID = 4L;
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(dX != SPEED) {
-					dX = -SPEED;
-					dY = 0;
-				}
-			}
-		});
-		getActionMap().put(KEY_RIGHT, new AbstractAction() {
-			private static final long serialVersionUID = 5L;
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(dX != -SPEED) {
-					dX = SPEED;
-					dY = 0;
-				}
-			}
-		});
-		getActionMap().put(PAUSE, new AbstractAction() {
-			private static final long serialVersionUID = 2L;
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(isPaused)
-					isPaused = false;
-				else
-					isPaused = true;
-				if(isLoser || isWinner)
-					resetGame();
-			}
-		});
+		//Configure Game variables
+		resetGame();
+		configureKeyBindings();
 	}
+	
+	// Public Methods =======================================================================
 	
 	public void paintComponent(Graphics g) {
 		Graphics2D g2D = (Graphics2D)g;
@@ -183,6 +133,8 @@ public class SnakeGame extends JPanel {
 	    });
 	}
 	
+	// Private Methods ======================================================================
+	
 	/** Update the game and physics variables. */
 	private void gameUpdate() {
 		// Update the snake (move it forward)
@@ -223,7 +175,7 @@ public class SnakeGame extends JPanel {
 		return output;
 	}
 	
-	/** Rest the snake and regenerate the food. */
+	/** Reset the snake and regenerate the food. */
 	private void resetGame() {
 		snake.clear();
 		snake.addToBody(new Point(GRID_WIDTH/2, GRID_HEIGHT/2));
@@ -237,5 +189,96 @@ public class SnakeGame extends JPanel {
 		isLoser = false;
 		isWinner = false;
 		isPaused = false;
+	}
+	
+	/** Configure the key bindings for the player to control. */
+	private void configureKeyBindings() {
+		// Configure Key Bindings
+				getInputMap(IFW).put(KeyStroke.getKeyStroke("UP"), KEY_UP);
+				getInputMap(IFW).put(KeyStroke.getKeyStroke("DOWN"), KEY_DOWN);
+				getInputMap(IFW).put(KeyStroke.getKeyStroke("LEFT"), KEY_LEFT);
+				getInputMap(IFW).put(KeyStroke.getKeyStroke("RIGHT"), KEY_RIGHT);
+				getInputMap(IFW).put(KeyStroke.getKeyStroke(' '), PAUSE);
+				getInputMap(IFW).put(KeyStroke.getKeyStroke('s'), SAVESTATE);
+				getActionMap().put(KEY_UP, new AbstractAction() {
+					private static final long serialVersionUID = 2L;
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						moveUp();
+					}
+				});
+				getActionMap().put(KEY_DOWN, new AbstractAction() {
+					private static final long serialVersionUID = 3L;
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						moveDown();
+					}
+				});
+				getActionMap().put(KEY_LEFT, new AbstractAction() {
+					private static final long serialVersionUID = 4L;
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						moveLeft();
+					}
+				});
+				getActionMap().put(KEY_RIGHT, new AbstractAction() {
+					private static final long serialVersionUID = 5L;
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						moveRight();
+					}
+				});
+				getActionMap().put(PAUSE, new AbstractAction() {
+					private static final long serialVersionUID = 6L;
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						if(isPaused)
+							isPaused = false;
+						else
+							isPaused = true;
+						if(isLoser || isWinner)
+							resetGame();
+					}
+				});
+				getActionMap().put(SAVESTATE, new AbstractAction() {
+					private static final long serialVersionUID = 7L;
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						if(isPaused) {
+						}
+					}
+				});
+				
+	}
+	
+	// Action Methods =======================================================================
+	
+	/** Turn the snake to move up if he's not looking down. */
+	private void moveUp() {
+		if(dY != SPEED) {
+			dX = 0;
+			dY = -SPEED;
+		}
+	}
+	
+	private void moveDown() {
+		if(dY != -SPEED) {
+			dX = 0;
+			dY = SPEED;
+		}
+	}
+	
+	private void moveLeft() {
+		if(dX != SPEED) {
+			dX = -SPEED;
+			dY = 0;
+		}
+	}
+	
+	private void moveRight() {
+		if(dX != -SPEED) {
+			dX = SPEED;
+			dY = 0;
+		}
 	}
 }

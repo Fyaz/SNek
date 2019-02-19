@@ -1,3 +1,4 @@
+package game;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -32,3 +33,4 @@ public class Main {
 		window.setVisible(true);
 	}
 }
+

@@ -1,3 +1,4 @@
+package game;
 
 public class Point {
 
@@ -20,8 +21,10 @@ public class Point {
 	public void setX(int x) { X = x; }
 	public void setY(int y) { Y = y; }
 	
-	public boolean equals(Point other) {
-		return (X == other.getX() && Y == other.getY());
+	@Override
+	public boolean equals(Object o) {
+		Point other = (Point)o;
+		return (X == other.X && Y == other.Y);
 	}
 	
 	@Override
