@@ -15,8 +15,4 @@ public class SnakeAI {
 	
 	
 	
-	public void saveState() throws IOException {
-		
-	}
-	
 }
