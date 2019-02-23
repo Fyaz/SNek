@@ -38,6 +38,7 @@ public class FileIO {
 		Scanner readFile = new Scanner(new File(input_file));
 		while(readFile.hasNextLine())
 			output += readFile.nextLine();
+		readFile.close();
 		return output;
 	}
 	
