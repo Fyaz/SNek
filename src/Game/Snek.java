@@ -2,8 +2,14 @@ package game;
 
 public class Snek {
 	
+	// Values defining the body itself
 	private Point[] body;	// A list of points for the body of the snek
 	private int length; 	// the current length of the snake's body
+	
+	// Movement Values
+	private final byte SPEED = 1;
+	private int dX = 0;
+	private int dY = 0;
 	
 	public Snek(int max_length) {
 		body = new Point[max_length];
@@ -43,6 +49,12 @@ public class Snek {
 				return true;
 		return false;
 	}
+	
+	public int getSpeed() { return SPEED; }
+	public int getdX() { return dX; }
+	public int getdY() { return dY; }
+	public void setdX(int _dx) { dX = _dx; }
+	public void setdY(int _dy) { dY = _dy; }
 	
 	// Modifier Methods =========================================================
 	

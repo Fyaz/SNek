@@ -1,4 +1,4 @@
-package ai;
+package ai.neural;
 
 import java.io.BufferedWriter;
 import java.io.File;

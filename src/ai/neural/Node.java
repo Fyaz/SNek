@@ -1,17 +1,27 @@
-package ai;
+package ai.neural;
 
 import java.util.ArrayList;
+
+import ai.AIOutput;
 
 /** A node used in the Snake AI. */
 public class Node {
 
+	// TODO: replace feel with input. 
+	private NodeInput input;
 	private long feel;
-	private final NodeOutput output;
+	private final AIOutput output;
 	private ArrayList<Node> connectedNodes;
+	
+	public Node(long l, AIOutput _output) {
+		feel = l;
+		output = _output;
+		connectedNodes = new ArrayList<Node>();
+	}
 	
 	public Node(long l, boolean _up, boolean _down, boolean _left, boolean _right) {
 		feel = l;
-		output = new NodeOutput(_up, _down, _left, _right);
+		output = new AIOutput(_up, _down, _left, _right);
 		connectedNodes = new ArrayList<Node>();
 	}
 	
@@ -38,7 +48,7 @@ public class Node {
 		feel = l;
 	}
 	
-	public NodeOutput getOutput() {
+	public AIOutput getOutput() {
 		return output;
 	}
 	

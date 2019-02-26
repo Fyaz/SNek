@@ -42,9 +42,6 @@ public class SnakeGame extends JPanel {
 	
 	// Snake and direction variables
 	private Snek snake = new Snek(GRID_WIDTH*GRID_HEIGHT);	// Create a snake (or rather, a list of body parts)
-	private final byte SPEED = 1;
-	private int dX = 0;
-	private int dY = 0;
 	
 	// Food Variables 
 	private Point food_location;
@@ -61,9 +58,6 @@ public class SnakeGame extends JPanel {
 	// Snake AI
 	SnakeAI ai;
 	private int generation = 0;
-	private final int LOSEFEEL = -100;
-	private final int EATFEEL = 10000;
-	private final int WINFEEL = 50000;
 	
 	// Constructor ==========================================================================
 	
@@ -74,7 +68,7 @@ public class SnakeGame extends JPanel {
 		
 		//Configure Game variables
 		ai = new SnakeAI();
-		ai.turnOn();
+		ai.turnOff();
 		resetGame();
 		configureKeyBindings();
 	}
@@ -94,7 +88,6 @@ public class SnakeGame extends JPanel {
 		g2D.setColor(TEXT_COLOR);
 		g2D.drawString("FPS: " + display_framerate, 5, 15);
 		g2D.drawString("Gen: " + generation, 5, 30);
-		g2D.drawString("Feel: " + ai.getFeel(), 5, 45);
 		
 		// Update game variables after a certain amount of time.
 		if(!isPaused && !isLoser && !isWinner) {
@@ -150,13 +143,6 @@ public class SnakeGame extends JPanel {
 	/** Update the game and physics variables. */
 	private void gameUpdate() {
 		
-		// Update the snake (move it forward)
-		Point newHead = new Point(snake.head().getX()+dX, snake.head().getY()+dY);
-		if(!inGrid(newHead)) {
-			ai.setFeel(ai.getFeel() + LOSEFEEL);
-			isLoser = true;
-		}
-		
 		//Update AI
 		if(ai.isOn()) {
 			if(ai.up())
@@ -167,19 +153,23 @@ public class SnakeGame extends JPanel {
 				moveLeft();
 			else if(ai.right())
 				moveRight();
-			ai.updateAI();	
+			ai.update();	
+		}
+		
+		// Update the snake (move it forward)
+		Point newHead = new Point(snake.head().getX()+snake.getdX(), snake.head().getY()+snake.getdY());
+		if(!inGrid(newHead)) {
+			isLoser = true;
 		}
 		
 		// Check collision with self
 		for(int i = 1; i < snake.length(); i++)
 			if(snake.getPointAt(i).equals(snake.head())) {
-				ai.setFeel(ai.getFeel() + LOSEFEEL);
 				isLoser = true; 
 			}
 		
 		// Check for collision with the food
 		if(snake.head().equals(food_location)) {
-			ai.setFeel(ai.getFeel() + EATFEEL);
 			snake.addToBody(newHead);
 			food_location = getRandomPoint();
 		}
@@ -189,10 +179,8 @@ public class SnakeGame extends JPanel {
 		
 		// Check if winner
 		if(snake.length() == (GRID_WIDTH * GRID_HEIGHT)) {
-			ai.setFeel(ai.getFeel() + WINFEEL);
 			isWinner = true;
 		}
-		ai.addNewNode(ai.getFeel());
 		
 		if((isWinner || isLoser) && ai.isOn()) {
 			resetGame();
@@ -210,13 +198,15 @@ public class SnakeGame extends JPanel {
 		while(inGrid(i)) {
 			if(i.equals(food_location))
 				return true;
-			i.setX(i.getX() + dX);
-			i.setY(i.getY() + dY);
+			i.setX(i.getX() + snake.getdX());
+			i.setY(i.getY() + snake.getdY());
 		}
 		return false;
 	}
 	
-	/** Check whether the Point p is within the grid. */
+	/** Check whether the Point p is within the grid. 
+	 * @param p - Check whether this Point is within in grid 
+	 * @return true if p is within the bounds of the grid, else false. */
 	private boolean inGrid(Point p) {
 		return (p.getX() > -1 && p.getX() < GRID_WIDTH && p.getY() > -1 && p.getY() < GRID_HEIGHT);
 	}
@@ -232,15 +222,14 @@ public class SnakeGame extends JPanel {
 	/** Reset the snake and regenerate the food. */
 	private void resetGame() {
 		generation++;
-		ai.reset();
 		snake.clear();
 		snake.addToBody(new Point(GRID_WIDTH/2, GRID_HEIGHT/2));
 		snake.addToBody(new Point(GRID_WIDTH/2-1, GRID_HEIGHT/2));
 		snake.addToBody(new Point(GRID_WIDTH/2-2, GRID_HEIGHT/2));
 		snake.addToBody(new Point(GRID_WIDTH/2-3, GRID_HEIGHT/2));
 		food_location = getRandomPoint();
-		dX = 0;
-		dY = SPEED;
+		snake.setdX(0);
+		snake.setdY(snake.getSpeed());
 		previous_update_time = System.nanoTime();
 		isLoser = false;
 		isWinner = false;
@@ -311,30 +300,30 @@ public class SnakeGame extends JPanel {
 	
 	/** Turn the snake to move up if he's not looking down. */
 	private void moveUp() {
-		if(dY != SPEED) {
-			dX = 0;
-			dY = -SPEED;
+		if(snake.getdY() != snake.getSpeed()) {
+			snake.setdX(0);
+			snake.setdY(-snake.getSpeed());
 		}
 	}
 	
 	private void moveDown() {
-		if(dY != -SPEED) {
-			dX = 0;
-			dY = SPEED;
+		if(snake.getdY() != -snake.getSpeed()) {
+			snake.setdX(0);
+			snake.setdY(snake.getSpeed());
 		}
 	}
 	
 	private void moveLeft() {
-		if(dX != SPEED) {
-			dX = -SPEED;
-			dY = 0;
+		if(snake.getdX() != snake.getSpeed()) {
+			snake.setdX(-snake.getSpeed());
+			snake.setdY(0);
 		}
 	}
 	
 	private void moveRight() {
-		if(dX != -SPEED) {
-			dX = SPEED;
-			dY = 0;
+		if(snake.getdX() != -snake.getSpeed()) {
+			snake.setdX(snake.getSpeed());
+			snake.setdY(0);
 		}
 	}
 }
