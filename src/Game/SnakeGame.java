@@ -5,11 +5,16 @@ import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+
 import ai.SnakeAI;
+import graphics.GameMenu;
+import graphics.MenuItem;
 
 /** Opens up a JPanel that plays a Snake game using the arrow keys on the keyboard. */
 public class SnakeGame extends JPanel {
@@ -39,18 +44,18 @@ public class SnakeGame extends JPanel {
 	private static final String KEY_RIGHT = "move right";
 	private static final String PAUSE = "pause game";
 	private static final String SAVESTATE = "save";
-	
-	// Snake and direction variables
-	private Snek snake = new Snek(GRID_WIDTH*GRID_HEIGHT);	// Create a snake (or rather, a list of body parts)
-	
-	// Food Variables 
-	private Point food_location;
+	private static final String CONFIRM = "confirm selection";
 	
 	// Physics update time
 	private final long UPDATE_TIME = 50000000;	// The amount of time between each game update: 50000000
 	private long previous_update_time = 0;	// After a certain amount of time, update the snake. (Separates the game physics from the frame rate)
 	private int framerate = 0;	// Number of frames generated in between physics updates
 	private int display_framerate = 0;
+	
+	// Game Variables
+	private Snek snake = new Snek(GRID_WIDTH*GRID_HEIGHT);	// Create a snake (or rather, a list of body parts)
+	private Point food_location;
+	private GameMenu menu;
 	private boolean isPaused = false;	// A variables to keep track if the game is paused or not.
 	private boolean isLoser = false;	// The player loses the game when they collide with the edge or itself
 	private boolean isWinner = false;	// The player wins when it the snake is the size of the grid x grid. 
@@ -71,6 +76,7 @@ public class SnakeGame extends JPanel {
 		ai.turnOff();
 		resetGame();
 		configureKeyBindings();
+		configureMenu();
 	}
 	
 	// Public Methods =======================================================================
@@ -87,26 +93,8 @@ public class SnakeGame extends JPanel {
 		// Draw text info
 		g2D.setColor(TEXT_COLOR);
 		g2D.drawString("FPS: " + display_framerate, 5, 15);
-		g2D.drawString("Gen: " + generation, 5, 30);
-		
-		// Update game variables after a certain amount of time.
-		if(!isPaused && !isLoser && !isWinner) {
-			if(System.nanoTime() - previous_update_time > UPDATE_TIME) {
-				gameUpdate();
-			}
-		}
-		else {
-			if(isWinner) {
-				g2D.drawString("You Win!", getWidth()/2-40, getHeight()/2-30);
-				g2D.drawString("Do you want to play again? ", getWidth()/2-80, getHeight()/2-15);
-			}
-			else if(isLoser) {
-				g2D.drawString("You Lose...", getWidth()/2-40, getHeight()/2-30);
-				g2D.drawString("Do you want to play again? ", getWidth()/2-80, getHeight()/2-15);
-			}
-			else if(isPaused)
-				g2D.drawString("Paused", getWidth()/2-20, getHeight()/2-10);
-		}
+		if(ai.isOn())
+			g2D.drawString("Gen: " + generation, 5, 30);
 		
 		// Draw all the blocks of the snake
 		g2D.setColor(HEAD_COLOR);
@@ -128,6 +116,28 @@ public class SnakeGame extends JPanel {
 				     food_location.getY()*(block_height)+2,
 				     block_width-2, 
 				     block_height-2);
+		
+		// Update game variables after a certain amount of time.
+		g2D.setColor(TEXT_COLOR);
+		if(!isPaused && !isLoser && !isWinner) {
+			if(System.nanoTime() - previous_update_time > UPDATE_TIME) {
+				gameUpdate();
+			}
+		}
+		else {
+			if(isWinner) {
+				g2D.drawString("You Win!", getWidth()/2-40, getHeight()/2-30);
+				g2D.drawString("Press \"Space\" to play again", getWidth()/2-80, getHeight()/2-15);
+			}
+			else if(isLoser) {
+				g2D.drawString("You Lose...", getWidth()/2-40, getHeight()/2-30);
+				g2D.drawString("Press \"Space\" to play again", getWidth()/2-80, getHeight()/2-15);
+			}
+			else if(isPaused) {
+				g2D.drawString("Game Paused", getWidth()/3, getHeight()/3-10);
+				menu.draw(getWidth()/3, getHeight()/3, getWidth()/3, getHeight()/3, g2D);
+			}
+		}
 		
 		// Call to paint and loop the game engine?
 		framerate++;
@@ -245,18 +255,25 @@ public class SnakeGame extends JPanel {
 				getInputMap(IFW).put(KeyStroke.getKeyStroke("RIGHT"), KEY_RIGHT);
 				getInputMap(IFW).put(KeyStroke.getKeyStroke(' '), PAUSE);
 				getInputMap(IFW).put(KeyStroke.getKeyStroke('s'), SAVESTATE);
+				getInputMap(IFW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), CONFIRM);
 				getActionMap().put(KEY_UP, new AbstractAction() {
 					private static final long serialVersionUID = 2L;
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						moveUp();
+						if(isPaused) 
+							menu.moveUp();
+						else
+							moveUp();
 					}
 				});
 				getActionMap().put(KEY_DOWN, new AbstractAction() {
 					private static final long serialVersionUID = 3L;
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						moveDown();
+						if(isPaused)
+							menu.moveDown();
+						else
+							moveDown();
 					}
 				});
 				getActionMap().put(KEY_LEFT, new AbstractAction() {
@@ -293,7 +310,48 @@ public class SnakeGame extends JPanel {
 						}
 					}
 				});
-				
+				getActionMap().put(CONFIRM, new AbstractAction() {
+					private static final long serialVersionUID = 8L;
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						if(isPaused) {
+							menu.execute();
+							if(menu.closeFlagSet())
+								isPaused = false;
+						}
+					}
+				});
+	}
+	
+	/** Configure the pause menu to switch between different AIs. */
+	private void configureMenu() {
+		menu = new GameMenu();
+		menu.addMenuItem(new MenuItem("Human", false) {
+			@Override
+			public void actionPerformed() {
+				ai.turnOff();
+			}
+		});
+		menu.addMenuItem(new MenuItem("Neural", false) {
+			@Override
+			public void actionPerformed() {
+				ai.turnOn();
+				ai.setAI(SnakeAI.NEURAL_AI);
+				generation = 1;
+			}
+		});
+		menu.addMenuItem(new MenuItem("BFS", false) {
+			@Override
+			public void actionPerformed() {
+				ai.turnOn();
+				ai.setAI(SnakeAI.BFS);
+			}
+		});
+		menu.addMenuItem(new MenuItem("Exit", true) {
+			@Override
+			public void actionPerformed() {
+			}
+		});
 	}
 	
 	// Action Methods =======================================================================

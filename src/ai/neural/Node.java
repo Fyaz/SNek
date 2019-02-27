@@ -9,7 +9,7 @@ public class Node {
 
 	// TODO: replace feel with input. 
 	private NodeInput input;
-	private long feel;
+	private long feel;	// Whenever a decision was made, a node is created keeping track of the 
 	private final AIOutput output;
 	private ArrayList<Node> connectedNodes;
 	

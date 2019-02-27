@@ -7,14 +7,20 @@ import java.awt.Graphics;
 public abstract class MenuItem implements GraphicsElement {
 
 	private String name;
-	abstract void actionPerformed();
+	private boolean close_when_executed;
+	public abstract void actionPerformed();
 	
 	public MenuItem() {
-		name = "<Blank Menu Item>";
+		this("<Blank Menu Item>", false);
 	}
 	
 	public MenuItem(String _name) {
+		this(_name, false);
+	}
+	
+	public MenuItem(String _name, boolean _close_when_executed) {
 		name = _name;
+		close_when_executed = _close_when_executed;
 	}
 	
 	public String getName() {
@@ -29,20 +35,20 @@ public abstract class MenuItem implements GraphicsElement {
 		return name;
 	}
 	
-	@Override
-	public void draw(int x, int y, int length, int height, Graphics g) {
-		Font MenuText = new Font(Font.MONOSPACED, Font.ROMAN_BASELINE, height);
-		Color previous_color = g.getColor();
-		Font previous_font = g.getFont();
-		
-		g.setColor(Color.WHITE);
-		g.setFont(MenuText);
-		g.drawString(name, x, y);
-		g.setColor(previous_color);
-		g.setFont(previous_font);
+	public boolean closeAfterExecution() {
+		return close_when_executed;
 	}
 	
+	public void setcloseAfter(boolean _close_when_executed) {
+		close_when_executed = _close_when_executed;
+	}
 	
-	
+	@Override
+	public void draw(int x, int y, int length, int height, Graphics g) {
+		Color previous_color = g.getColor();
+		g.setColor(Color.WHITE);
+		g.drawString(name, x, y);
+		g.setColor(previous_color);
+	}
 	
 }
