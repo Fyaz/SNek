@@ -27,7 +27,7 @@ public class Main {
         catch (Exception e) {
             System.err.println("System look and feel did not load properly.");
         }
-		window.setTitle("Snake Game");
+		window.setTitle("Snek");
 		window.setLocationRelativeTo(null);	// Center the window
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	// When the X button is pressed, terminate the program.
 		window.setVisible(true);

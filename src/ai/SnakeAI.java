@@ -19,17 +19,22 @@ public class SnakeAI {
 	
 	// Different Modes for the AI
 	private int mode = 0;
-	public static final int NEURAL_AI = 0;
-	public static final int BFS = 1;
+	public static final byte NEURAL_AI = 0;
+	public static final byte BFS = 1;
 	
 	// Different types of AI for the snake 
 	private ArrayList<AI> brain;
+	
+	// Use this to collect the different inputs used for the AI 
+	private AIInput inputs;
 	
 	// Current outputs of the snake
 	// co stands for "current output"
 	private AIOutput co;
 	
+	/** Basic Constructor. */
 	public SnakeAI() {
+		inputs = new AIInput();
 		co = new AIOutput(false, true, false, false);
 		brain = new ArrayList<AI>();
 		brain.add(new NeuralAI(0, co.up, co.down, co.left, co.right));
@@ -51,9 +56,16 @@ public class SnakeAI {
 	
 	/** There are different static variables provided for 
 	switching the modes for the AI. */
-	public void setAI(int _mode) {
-		mode = _mode;
-	}
+	public void setAI(int _mode) { mode = _mode; }
+	
+	/** Collect which AI is currently being run. */
+	public int mode() { return mode; }
+	
+	/** Reset the inputs */
+	public void resetInputs() { inputs.clear(); }
+	
+	/** Add an input to later be used by the AI when calling update(). */
+	public void addInput(Object o) { inputs.add(o); }
 	
 	// Public Methods =======================================================================
 	
@@ -61,6 +73,7 @@ public class SnakeAI {
 	 * The new output will be stored in co. call up(), down(), left(), right() to 
 	 * get the results of the output. */
 	public void update() {
+		brain.get(mode).parseInput(inputs);
 		co = brain.get(mode).getOutput();
 	}
 	

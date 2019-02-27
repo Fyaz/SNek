@@ -13,8 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 import ai.SnakeAI;
-import graphics.GameMenu;
-import graphics.MenuItem;
+import gui.GameMenu;
+import gui.MenuItem;
 
 /** Opens up a JPanel that plays a Snake game using the arrow keys on the keyboard. */
 public class SnakeGame extends JPanel {
@@ -192,6 +192,7 @@ public class SnakeGame extends JPanel {
 			isWinner = true;
 		}
 		
+		gatherAIInputs();
 		if((isWinner || isLoser) && ai.isOn()) {
 			resetGame();
 		}
@@ -200,6 +201,22 @@ public class SnakeGame extends JPanel {
 		display_framerate = framerate;
 		framerate = 0;
 		previous_update_time = System.nanoTime();
+	}
+	
+	/** This game supports 2 type of AI: NEURAL and BFS. 
+	 * Both of these require very different types of inputs. 
+	 * So this method collects the inputs needed for each supported AI. */
+	private void gatherAIInputs() {
+		ai.resetInputs();
+		if(ai.mode() == SnakeAI.NEURAL_AI) {
+			// TODO: Add the inputs necessary for the custom neural snake to work. 
+		}
+		else if(ai.mode() == SnakeAI.BFS) {
+			ai.addInput(food_location);
+			ai.addInput(GRID_WIDTH);
+			ai.addInput(GRID_HEIGHT);
+			ai.addInput(snake);
+		}
 	}
 	
 	/** If the snake were to just go straight, then would he hit food? */
@@ -244,95 +261,96 @@ public class SnakeGame extends JPanel {
 		isLoser = false;
 		isWinner = false;
 		isPaused = false;
+		gatherAIInputs();
 	}
 	
 	/** Configure the key bindings for the player to control. */
 	private void configureKeyBindings() {
 		// Configure Key Bindings
-				getInputMap(IFW).put(KeyStroke.getKeyStroke("UP"), KEY_UP);
-				getInputMap(IFW).put(KeyStroke.getKeyStroke("DOWN"), KEY_DOWN);
-				getInputMap(IFW).put(KeyStroke.getKeyStroke("LEFT"), KEY_LEFT);
-				getInputMap(IFW).put(KeyStroke.getKeyStroke("RIGHT"), KEY_RIGHT);
-				getInputMap(IFW).put(KeyStroke.getKeyStroke(' '), PAUSE);
-				getInputMap(IFW).put(KeyStroke.getKeyStroke('s'), SAVESTATE);
-				getInputMap(IFW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), CONFIRM);
-				getActionMap().put(KEY_UP, new AbstractAction() {
-					private static final long serialVersionUID = 2L;
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						if(isPaused) 
-							menu.moveUp();
-						else
-							moveUp();
-					}
-				});
-				getActionMap().put(KEY_DOWN, new AbstractAction() {
-					private static final long serialVersionUID = 3L;
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						if(isPaused)
-							menu.moveDown();
-						else
-							moveDown();
-					}
-				});
-				getActionMap().put(KEY_LEFT, new AbstractAction() {
-					private static final long serialVersionUID = 4L;
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						moveLeft();
-					}
-				});
-				getActionMap().put(KEY_RIGHT, new AbstractAction() {
-					private static final long serialVersionUID = 5L;
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						moveRight();
-					}
-				});
-				getActionMap().put(PAUSE, new AbstractAction() {
-					private static final long serialVersionUID = 6L;
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						if(isPaused)
-							isPaused = false;
-						else
-							isPaused = true;
-						if(isLoser || isWinner)
-							resetGame();
-					}
-				});
-				getActionMap().put(SAVESTATE, new AbstractAction() {
-					private static final long serialVersionUID = 7L;
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						if(isPaused) {
-						}
-					}
-				});
-				getActionMap().put(CONFIRM, new AbstractAction() {
-					private static final long serialVersionUID = 8L;
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						if(isPaused) {
-							menu.execute();
-							if(menu.closeFlagSet())
-								isPaused = false;
-						}
-					}
-				});
+		getInputMap(IFW).put(KeyStroke.getKeyStroke("UP"), KEY_UP);
+		getInputMap(IFW).put(KeyStroke.getKeyStroke("DOWN"), KEY_DOWN);
+		getInputMap(IFW).put(KeyStroke.getKeyStroke("LEFT"), KEY_LEFT);
+		getInputMap(IFW).put(KeyStroke.getKeyStroke("RIGHT"), KEY_RIGHT);
+		getInputMap(IFW).put(KeyStroke.getKeyStroke(' '), PAUSE);
+		getInputMap(IFW).put(KeyStroke.getKeyStroke('s'), SAVESTATE);
+		getInputMap(IFW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), CONFIRM);
+		getActionMap().put(KEY_UP, new AbstractAction() {
+			private static final long serialVersionUID = 2L;
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(isPaused) 
+					menu.moveUp();
+				else
+					moveUp();
+			}
+		});
+		getActionMap().put(KEY_DOWN, new AbstractAction() {
+			private static final long serialVersionUID = 3L;
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(isPaused)
+					menu.moveDown();
+				else
+					moveDown();
+			}
+		});
+		getActionMap().put(KEY_LEFT, new AbstractAction() {
+			private static final long serialVersionUID = 4L;
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				moveLeft();
+			}
+		});
+		getActionMap().put(KEY_RIGHT, new AbstractAction() {
+			private static final long serialVersionUID = 5L;
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				moveRight();
+			}
+		});
+		getActionMap().put(PAUSE, new AbstractAction() {
+			private static final long serialVersionUID = 6L;
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(isPaused)
+					isPaused = false;
+				else
+					isPaused = true;
+				if(isLoser || isWinner)
+					resetGame();
+			}
+		});
+		getActionMap().put(SAVESTATE, new AbstractAction() {
+			private static final long serialVersionUID = 7L;
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(isPaused) {
+				}
+			}
+		});
+		getActionMap().put(CONFIRM, new AbstractAction() {
+			private static final long serialVersionUID = 8L;
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(isPaused) {
+					menu.execute();
+					if(menu.closeFlagSet())
+						isPaused = false;
+				}
+			}
+		});
 	}
 	
 	/** Configure the pause menu to switch between different AIs. */
 	private void configureMenu() {
 		menu = new GameMenu();
-		menu.addMenuItem(new MenuItem("Human", false) {
+		menu.addMenuItem(new MenuItem("Human Player", false) {
 			@Override
 			public void actionPerformed() {
 				ai.turnOff();
 			}
 		});
-		menu.addMenuItem(new MenuItem("Neural", false) {
+		menu.addMenuItem(new MenuItem("Custom AI", false) {
 			@Override
 			public void actionPerformed() {
 				ai.turnOn();
@@ -340,14 +358,14 @@ public class SnakeGame extends JPanel {
 				generation = 1;
 			}
 		});
-		menu.addMenuItem(new MenuItem("BFS", false) {
+		menu.addMenuItem(new MenuItem("BFS AI", false) {
 			@Override
 			public void actionPerformed() {
 				ai.turnOn();
-				ai.setAI(SnakeAI.BFS);
+			 	ai.setAI(SnakeAI.BFS);
 			}
 		});
-		menu.addMenuItem(new MenuItem("Exit", true) {
+		menu.addMenuItem(new MenuItem("Exit Menu", true) {
 			@Override
 			public void actionPerformed() {
 			}
