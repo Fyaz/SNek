@@ -1,6 +1,6 @@
 package game;
 
-public class Point {
+public class Point implements Comparable<Point> {
 
 	private int X;
 	private int Y;
@@ -15,6 +15,11 @@ public class Point {
 		Y = y;
 	}
 	
+	public Point(Point other) {
+		X = other.X;
+		Y = other.Y;
+	}
+	
 	public int getX() { return X; }
 	public int getY() { return Y; }
 	
@@ -22,9 +27,16 @@ public class Point {
 	public void setY(int y) { Y = y; }
 	
 	@Override
+	public int hashCode() {
+		int hash = X;
+		hash = 31*hash + Y;
+		return hash;
+	}
+	
+	@Override
 	public boolean equals(Object o) {
 		Point other = (Point)o;
-		return (X == other.X && Y == other.Y);
+		return (X == other.getX() && Y == other.getY());
 	}
 	
 	@Override
@@ -32,4 +44,24 @@ public class Point {
 		return "(" + X + "," + Y + ")";
 	}
 	
+	@Override
+	public int compareTo(Point o) {
+		if(areaUnderVector() > o.areaUnderVector()) {
+			return 1;
+		}
+		else if(areaUnderVector() < o.areaUnderVector()) {
+			return -1;
+		}
+		else if(areaUnderVector() == o.areaUnderVector()) {
+			if(Y > o.getY())
+				return 1;
+			else if(Y < o.getY())
+				return -1;
+		}
+		return 0;
+	}
+	
+	private double areaUnderVector() {
+		return X*Y/2;
+	}
 }

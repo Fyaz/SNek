@@ -62,7 +62,8 @@ public class SnakeGame extends JPanel {
 	
 	// Snake AI
 	SnakeAI ai;
-	private int generation = 0;
+	private int generation = 0;	// Keeps track of how many times the AI loses/wins. 
+								// For a learning AI, this indicates the growth of the AI. 
 	
 	// Constructor ==========================================================================
 	
@@ -152,9 +153,9 @@ public class SnakeGame extends JPanel {
 	
 	/** Update the game and physics variables. */
 	private void gameUpdate() {
-		
 		//Update AI
 		if(ai.isOn()) {
+			gatherAIInputs();
 			if(ai.up())
 				moveUp();
 			else if(ai.down())
@@ -167,35 +168,25 @@ public class SnakeGame extends JPanel {
 		}
 		
 		// Update the snake (move it forward)
-		Point newHead = new Point(snake.head().getX()+snake.getdX(), snake.head().getY()+snake.getdY());
-		if(!inGrid(newHead)) {
-			isLoser = true;
-		}
-		
 		// Check collision with self
+		Point newHead = new Point(snake.head().getX()+snake.getdX(), snake.head().getY()+snake.getdY());
+		if(!inGrid(newHead))
+			isLoser = true;
 		for(int i = 1; i < snake.length(); i++)
-			if(snake.getPointAt(i).equals(snake.head())) {
+			if(snake.getPointAt(i).equals(snake.head()))
 				isLoser = true; 
-			}
-		
 		// Check for collision with the food
 		if(snake.head().equals(food_location)) {
 			snake.addToBody(newHead);
 			food_location = getRandomPoint();
 		}
-		else {
+		else
 			snake.UpdateSnek(newHead);
-		}
-		
 		// Check if winner
-		if(snake.length() == (GRID_WIDTH * GRID_HEIGHT)) {
+		if(snake.length() == (GRID_WIDTH * GRID_HEIGHT))
 			isWinner = true;
-		}
-		
-		gatherAIInputs();
-		if((isWinner || isLoser) && ai.isOn()) {
+		if((isWinner || isLoser) && ai.isOn())
 			resetGame();
-		}
 		
 		// Update window variables
 		display_framerate = framerate;

@@ -93,5 +93,10 @@ public class AIOutput {
 			 && left == other.left 
 			 && right == other.right);
 	}
+	
+	@Override
+	public String toString() {
+		return "[up = " + up + ", down = " + down + ", left = " + left + ", right = " + right + "]";
+	}
 
 }

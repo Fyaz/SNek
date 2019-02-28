@@ -1,10 +1,15 @@
 package ai.BreadthAI;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeMap;
 
 import ai.AI;
 import ai.AIInput;
@@ -22,14 +27,57 @@ public class BFS implements AI {
 	
 	// The resulting output of the BFS
 	private AIOutput currentOutput;
-	private Deque<AIOutput> nextOutputs;
+	private Stack<AIOutput> outputStack;
 	
 	public BFS() {
 		food_loc = new Point(0,0);
 		gL = 0;
 		gH = 0;
 		currentOutput = new AIOutput(false, false, false, false);
-		nextOutputs = new LinkedList<AIOutput>();
+		outputStack = new Stack<AIOutput>();
+	}
+	
+	/** Implemented from the AI interfaace.
+	 * This code generates a list of outputs based on a 
+	 * path from now to the location of the food.
+	 * If the list of outputs is still not complete, then output the next output
+	 * else generate a new list. */
+	@Override
+	public AIOutput getOutput() {
+		if(!outputStack.isEmpty()) {
+			currentOutput = outputStack.pop();
+			return currentOutput;
+		}
+		BreadthFirstSearch();
+		return currentOutput;
+	}
+
+	/** Implemented from the AI interface. */
+	@Override
+	public void parseInput(AIInput _input) {
+		try {
+			if((_input.get(0) instanceof Point)) {
+				food_loc = (Point)_input.get(0);
+			}
+			else
+				throw new IllegalArgumentException();
+			if((_input.get(1) instanceof Integer))
+				gL = (Integer)_input.get(1);
+			else
+				throw new IllegalArgumentException();
+			if((_input.get(2) instanceof Integer))
+				gH = (Integer)_input.get(2);
+			else
+				throw new IllegalArgumentException();
+			if((_input.get(3) instanceof Snek))
+				snake = (Snek)_input.get(3);
+			else
+				throw new IllegalArgumentException();
+		}
+		catch(IllegalArgumentException e) {
+			System.err.println("BFS recieved an invalid input.");
+			System.exit(-1);
+		}
 	}
 	
 	/** BFS Pseudo-code
@@ -54,87 +102,53 @@ public class BFS implements AI {
 	 * end loop
 	 * currentOutput = nextOutputs.dequeue(); */
 	private void BreadthFirstSearch() {
-		Queue<Point> stack = new LinkedList<Point>();
+		Queue<Point> queue = new LinkedList<Point>();
 		Map<Point, Point> parentMap = new HashMap<Point, Point>();
 		
 		// Find a path from head to destination 
-		stack.add(snake.head());
-		while(!stack.isEmpty()) {
-			Point s = stack.remove();
-			Point temp = new Point(s.getX(), s.getY());
-			// Check all the neighbors of curr
-			temp.setX(s.getX()-1);
-			if(temp.getX() > -1 && temp.getX() < gL && !snake.hasPoint(temp)) { // Check left
-				stack.add(temp);
-				parentMap.put(temp, s);
+		queue.add(snake.head());
+		parentMap.put(snake.head(), null);
+		while(!queue.isEmpty()) {
+			Point s = queue.poll();
+			Point temp = new Point(s.getX()-1, s.getY());
+			// Check all the neighbors of s
+			if(inGrid(temp) && !snake.hasPoint(temp) && !parentMap.containsKey(temp)) { // Check left
+				queue.add(new Point(temp.getX(), temp.getY()));
+				parentMap.put(new Point(temp.getX(), temp.getY()), s);
 			}
 			temp.setX(s.getX()+1);
-			if(temp.getX() > -1 && temp.getX() < gL && !snake.hasPoint(temp)) { // Check right
-				stack.add(temp);
-				parentMap.put(temp, s);
+			if(inGrid(temp) && !snake.hasPoint(temp) && !parentMap.containsKey(temp)) { // Check right
+				queue.add(new Point(temp.getX(), temp.getY()));
+				parentMap.put(new Point(temp.getX(), temp.getY()), s);
 			}
 			temp.setX(s.getX());
 			temp.setY(s.getY()-1);
-			if(temp.getY() > -1 && temp.getY() < gH && !snake.hasPoint(temp)) { // Check up
-				stack.add(temp);
-				parentMap.put(temp, s);
+			if(inGrid(temp) && !snake.hasPoint(temp) && !parentMap.containsKey(temp)) { // Check up
+				queue.add(new Point(temp.getX(), temp.getY()));
+				parentMap.put(new Point(temp.getX(), temp.getY()), s);
 			}
 			temp.setY(s.getY()+1);
-			if(temp.getY() > -1 && temp.getY() < gH && !snake.hasPoint(temp)) { // Check down
-				stack.add(temp);
-				parentMap.put(temp, s);
+			if(inGrid(temp) && !snake.hasPoint(temp) && !parentMap.containsKey(temp)) { // Check down
+				queue.add(new Point(temp.getX(), temp.getY()));
+				parentMap.put(new Point(temp.getX(), temp.getY()), s);
 			}
-			if(stack.contains(food_loc))
+			if(queue.contains(food_loc))
 				break;
 		}
 		
 		//Backtrack the parent Map to generate the path 
 		Point p = food_loc;
-		while(!p.equals(snake.head())) {
-			nextOutputs.addLast(new AIOutput(generateOutputMode(p, parentMap.get(p))));
+		while(p != snake.head()) {
+			AIOutput out = new AIOutput(generateOutputMode(parentMap.get(p), p));
+			outputStack.push(out);
 			p = parentMap.get(p);
 		}
-		currentOutput = nextOutputs.remove();
+		currentOutput = outputStack.pop();
 	}
-
-	/** This code generates a list of outputs based on a 
-	 * path from now to the location of the food.
-	 * If the list of outputs is still not complete, then output the next output
-	 * else generate a new list. */
-	@Override
-	public AIOutput getOutput() {
-		if(!nextOutputs.isEmpty()) {
-			currentOutput = nextOutputs.poll();
-			return currentOutput;
-		}
-		BreadthFirstSearch();
-		return currentOutput;
-	}
-
-	@Override
-	public void parseInput(AIInput _input) {
-		try {
-			if((_input.get(0) instanceof Point))
-				food_loc = (Point)_input.get(0);
-			else
-				throw new IllegalArgumentException();
-			if((_input.get(1) instanceof Integer))
-				gL = (int)_input.get(1);
-			else
-				throw new IllegalArgumentException();
-			if((_input.get(2) instanceof Integer))
-				gH = (int)_input.get(2);
-			else
-				throw new IllegalArgumentException();
-			if((_input.get(3) instanceof Snek))
-				snake = (Snek)_input.get(3);
-			else
-				throw new IllegalArgumentException();
-			
-		}
-		catch(IllegalArgumentException e) {
-			System.err.println("BFS recieved an invalid input.");
-		}
+	
+	/** Check if Point p is in the grid that's been seen by BFS. */
+	private boolean inGrid(Point p) {
+		return (p.getX() > -1 && p.getY() > -1 && p.getX() < gL && p.getY() < gH);
 	}
 	
 	/** Assuming Point one and Point two are adjacent points. 
@@ -143,16 +157,19 @@ public class BFS implements AI {
 	 * 			because you have to go UP to get from one to two, 
 	 * 			the method returns 0 (the mode for go UP). */
 	private int generateOutputMode(Point one, Point two) {
-		int[] diff = {one.getX() - two.getX(), one.getY() - two.getY()};
-		if(diff[1] == -1)
-			return AIOutput.UP;
-		else if(diff[1] == 1)
-			return AIOutput.DOWN;
-		else if(diff[0] == 1)
-			return AIOutput.LEFT;
-		else if(diff[0] == -1)
-			return AIOutput.RIGHT;
-		else return -1;
+		if(one != null && two != null) {
+			int[] diff = {one.getX() - two.getX(), one.getY() - two.getY()};
+			if(diff[1] <= -1)
+				return AIOutput.DOWN;
+			else if(diff[1] >= 1)
+				return AIOutput.UP;
+			else if(diff[0] >= 1)
+				return AIOutput.LEFT;
+			else if(diff[0] <= -1)
+				return AIOutput.RIGHT;
+			else return -1;
+		}
+		return -1;
 	}
 
 }

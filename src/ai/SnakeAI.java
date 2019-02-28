@@ -65,7 +65,9 @@ public class SnakeAI {
 	public void resetInputs() { inputs.clear(); }
 	
 	/** Add an input to later be used by the AI when calling update(). */
-	public void addInput(Object o) { inputs.add(o); }
+	public void addInput(Object o) { 
+		inputs.add(o); 
+	}
 	
 	// Public Methods =======================================================================
 	
