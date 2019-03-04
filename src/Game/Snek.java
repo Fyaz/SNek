@@ -16,6 +16,15 @@ public class Snek {
 		length = 0;
 	}
 	
+	public Snek(Snek other) {
+		body = new Point[other.getMaxLength()];
+		for(int i = 0; i < other.length; i++)
+			body[i] = new Point(other.getPointAt(i));
+		length = other.length;
+		dX = other.dX;
+		dY = other.dY;
+	}
+	
 	// Access methods =========================================================
 	
 	/** Return the point at the body part, body_part. 
@@ -77,6 +86,24 @@ public class Snek {
 	 * You can still access previous points on the snake, but 
 	 * None of the Snek methods will work for any points outside of the length(). */
 	public void clear() {
+		for(int i = 0; i < length; i++)
+			body[i] = null;
 		length = 0;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof Snek))
+			return false;
+		Snek other = (Snek)o;
+		if(length != other.length)
+			return false;
+		if(dX != other.dX && dY != other.dY)
+			return false;
+		for(int i = 0; i < length; i++) {
+			if(!body[i].equals(other.body[i]))
+				return false;
+		}
+		return true;
 	}
 }

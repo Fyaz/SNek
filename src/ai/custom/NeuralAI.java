@@ -1,9 +1,9 @@
-package ai.neural;
+package ai.custom;
 
 import ai.AI;
 import ai.AIInput;
 import ai.AIOutput;
-import ai.neural.Node;
+import ai.custom.Node;
 
 public class NeuralAI implements AI {
 

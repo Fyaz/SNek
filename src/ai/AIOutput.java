@@ -37,7 +37,7 @@ public class AIOutput {
 	 * 1 will configure the output to the down direction. 
 	 * 2 will configure the output to the left direction. 
 	 * 3 will configure the output to the right direction. 
-	 * Anything won't affect the output at all. */
+	 * Anything else won't affect the output at all. */
 	public void setOutput(int mode) {
 		switch(mode) {
 		case UP:

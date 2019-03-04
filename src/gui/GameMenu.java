@@ -27,6 +27,16 @@ public class GameMenu implements GraphicsElement {
 		menuItems.add(item);
 	}
 	
+	/** Returns the item at index i. Returns null if nothing is there. */
+	public MenuItem getMenuItem(int i) {
+		return menuItems.get(i);
+	}
+	
+	/** Returns the index of the currently selected menu item. */
+	public int getSelection() {
+		return selection;
+	}
+	
 	/** A method for navigating the Menu. 
 	 * Makes the cursor go up in the menu. */
 	public void moveUp() { 

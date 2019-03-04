@@ -46,7 +46,7 @@ public class SnakeGame extends JPanel {
 	private static final String SAVESTATE = "save";
 	private static final String CONFIRM = "confirm selection";
 	
-	// Physics update time
+	// Physics & update time
 	private final long UPDATE_TIME = 50000000;	// The amount of time between each game update: 50000000
 	private long previous_update_time = 0;	// After a certain amount of time, update the snake. (Separates the game physics from the frame rate)
 	private int framerate = 0;	// Number of frames generated in between physics updates
@@ -82,6 +82,7 @@ public class SnakeGame extends JPanel {
 	
 	// Public Methods =======================================================================
 	
+	/** The main loop of the game. */
 	public void paintComponent(Graphics g) {
 		Graphics2D g2D = (Graphics2D)g;
 		int block_width = getWidth()/GRID_WIDTH;
@@ -90,6 +91,19 @@ public class SnakeGame extends JPanel {
 		// Background
 		g2D.setColor(BACKGROUND);
 		g2D.fillRect(0, 0, getWidth(), getHeight());
+		
+		/* 
+		// Show the grid by un-commenting this block of code. 
+		g2D.setColor(Color.RED);
+		for(int i = 0; i < GRID_WIDTH; i++) {
+			g2D.drawString(i + "", i*block_width + 5, 15);
+			g2D.drawLine(i*block_width, 0, i*block_width, getHeight());
+		}
+		for(int i = 0; i < GRID_HEIGHT; i++) {
+			g2D.drawString(i + "", 5, i*block_height + 15);
+			g2D.drawLine(0, i*block_height, getWidth(), i*block_height);
+		} 
+		*/
 		
 		// Draw text info
 		g2D.setColor(TEXT_COLOR);
@@ -156,6 +170,7 @@ public class SnakeGame extends JPanel {
 		//Update AI
 		if(ai.isOn()) {
 			gatherAIInputs();
+			ai.update();	
 			if(ai.up())
 				moveUp();
 			else if(ai.down())
@@ -164,19 +179,18 @@ public class SnakeGame extends JPanel {
 				moveLeft();
 			else if(ai.right())
 				moveRight();
-			ai.update();	
 		}
 		
 		// Update the snake (move it forward)
 		// Check collision with self
-		Point newHead = new Point(snake.head().getX()+snake.getdX(), snake.head().getY()+snake.getdY());
+ 		Point newHead = new Point(snake.head().getX()+snake.getdX(), snake.head().getY()+snake.getdY());
 		if(!inGrid(newHead))
 			isLoser = true;
 		for(int i = 1; i < snake.length(); i++)
 			if(snake.getPointAt(i).equals(snake.head()))
 				isLoser = true; 
 		// Check for collision with the food
-		if(snake.head().equals(food_location)) {
+		if(newHead.equals(food_location)) {
 			snake.addToBody(newHead);
 			food_location = getRandomPoint();
 		}
@@ -185,7 +199,7 @@ public class SnakeGame extends JPanel {
 		// Check if winner
 		if(snake.length() == (GRID_WIDTH * GRID_HEIGHT))
 			isWinner = true;
-		if((isWinner || isLoser) && ai.isOn())
+		if(isLoser && ai.isOn())
 			resetGame();
 		
 		// Update window variables
@@ -242,17 +256,15 @@ public class SnakeGame extends JPanel {
 		generation++;
 		snake.clear();
 		snake.addToBody(new Point(GRID_WIDTH/2, GRID_HEIGHT/2));
-		snake.addToBody(new Point(GRID_WIDTH/2-1, GRID_HEIGHT/2));
-		snake.addToBody(new Point(GRID_WIDTH/2-2, GRID_HEIGHT/2));
-		snake.addToBody(new Point(GRID_WIDTH/2-3, GRID_HEIGHT/2));
+		snake.addToBody(new Point(GRID_WIDTH/2, GRID_HEIGHT/2+2));
+		snake.addToBody(new Point(GRID_WIDTH/2, GRID_HEIGHT/2+3));
+		snake.addToBody(new Point(GRID_WIDTH/2, GRID_HEIGHT/2+4));
+		moveDown();
 		food_location = getRandomPoint();
-		snake.setdX(0);
-		snake.setdY(snake.getSpeed());
 		previous_update_time = System.nanoTime();
 		isLoser = false;
 		isWinner = false;
 		isPaused = false;
-		gatherAIInputs();
 	}
 	
 	/** Configure the key bindings for the player to control. */
@@ -335,13 +347,13 @@ public class SnakeGame extends JPanel {
 	/** Configure the pause menu to switch between different AIs. */
 	private void configureMenu() {
 		menu = new GameMenu();
-		menu.addMenuItem(new MenuItem("Human Player", false) {
+		menu.addMenuItem(new MenuItem("Human Player") {
 			@Override
 			public void actionPerformed() {
 				ai.turnOff();
 			}
 		});
-		menu.addMenuItem(new MenuItem("Custom AI", false) {
+		menu.addMenuItem(new MenuItem("Custom AI") {
 			@Override
 			public void actionPerformed() {
 				ai.turnOn();
@@ -349,7 +361,7 @@ public class SnakeGame extends JPanel {
 				generation = 1;
 			}
 		});
-		menu.addMenuItem(new MenuItem("BFS AI", false) {
+		menu.addMenuItem(new MenuItem("BFS AI") {
 			@Override
 			public void actionPerformed() {
 				ai.turnOn();

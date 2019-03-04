@@ -1,20 +1,14 @@
 package ai;
 
-import java.util.ArrayList;
-
 import ai.BreadthAI.BFS;
-import ai.neural.NeuralAI;
+import ai.custom.NeuralAI;
 
-/** An AI decides outputs based on specified inputs. 
- * Inputs: 
- * 	- Location of the food. <Point>
- * 	- Location of the head of the snake. <Point> 
- * 	- The direction the snake is currently facing. <byte dX, dY>
- *  - Whether there is a section of the body in front of the snake. <boolean>
- *  */
+/** A General class for handling the inputs and outputs of a snake.
+ * Designed AI's will have specify what their inputs are using AI's parseInput,
+ * and output specific outputs (defined in AIOutput). */
 public class SnakeAI {
 	
-	// Decide whether the ai should be on or not.
+	// Decide whether the AI should be on or not.
 	private boolean AIOn;
 	
 	// Different Modes for the AI
@@ -23,7 +17,7 @@ public class SnakeAI {
 	public static final byte BFS = 1;
 	
 	// Different types of AI for the snake 
-	private ArrayList<AI> brain;
+	private AI brain;
 	
 	// Use this to collect the different inputs used for the AI 
 	private AIInput inputs;
@@ -36,18 +30,16 @@ public class SnakeAI {
 	public SnakeAI() {
 		inputs = new AIInput();
 		co = new AIOutput(false, true, false, false);
-		brain = new ArrayList<AI>();
-		brain.add(new NeuralAI(0, co.up, co.down, co.left, co.right));
-		brain.add(new BFS());
+		brain = new NeuralAI(0, co.up, co.down, co.left, co.right);
 	}
 	
 	// Getters and Setters ==================================================================
 	
 	// Get output AI decisions 
-	public boolean up() { return co.up; }
-	public boolean down() { return co.down; }
-	public boolean left() { return co.left; }
-	public boolean right() { return co.right; }
+	public boolean up() { return (co.generateMode() == AIOutput.UP); }
+	public boolean down() { return (co.generateMode() == AIOutput.DOWN); }
+	public boolean left() { return (co.generateMode() == AIOutput.LEFT); }
+	public boolean right() { return (co.generateMode() == AIOutput.RIGHT); }
 	
 	// Control the behavior of the AI 
 	public void turnOn() { AIOn = true; }
@@ -56,7 +48,13 @@ public class SnakeAI {
 	
 	/** There are different static variables provided for 
 	switching the modes for the AI. */
-	public void setAI(int _mode) { mode = _mode; }
+	public void setAI(int _mode) { 
+		mode = _mode; 
+		if(mode == NEURAL_AI)
+			brain = new NeuralAI(0, co.up, co.down, co.left, co.right);
+		else if(mode == BFS)
+			brain = new BFS();
+	}
 	
 	/** Collect which AI is currently being run. */
 	public int mode() { return mode; }
@@ -65,9 +63,7 @@ public class SnakeAI {
 	public void resetInputs() { inputs.clear(); }
 	
 	/** Add an input to later be used by the AI when calling update(). */
-	public void addInput(Object o) { 
-		inputs.add(o); 
-	}
+	public void addInput(Object o) { inputs.add(o); }
 	
 	// Public Methods =======================================================================
 	
@@ -75,8 +71,8 @@ public class SnakeAI {
 	 * The new output will be stored in co. call up(), down(), left(), right() to 
 	 * get the results of the output. */
 	public void update() {
-		brain.get(mode).parseInput(inputs);
-		co = brain.get(mode).getOutput();
+		brain.parseInput(inputs);
+		co = brain.getOutput();
 	}
 	
 }
